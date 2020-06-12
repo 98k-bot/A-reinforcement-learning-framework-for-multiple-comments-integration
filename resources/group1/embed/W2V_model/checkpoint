@@ -1,0 +1,2 @@
+model_checkpoint_path: "W2V.ckpt-71978"
+all_model_checkpoint_paths: "W2V.ckpt-71978"
