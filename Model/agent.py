@@ -101,9 +101,12 @@ def q_networks(source, summary, name):
                                       kernel_size=(1, mergeDimension), padding='valid',
                                       activation=tf.nn.tanh,
                                       kernel_initializer=SSECIF_initializer,
-                                      bias_initializer=SSECIF_initializer)
+                                      bias_initializer=SSECIF_initializer,
+                                      )
         _, unit_dim1, _, _ = cnn_output1.shape
         print cnn_output1.shape
+
+
 
         pooling_output = tf.layers.average_pooling2d(inputs=cnn_output1, pool_size=(3, 1), strides=(3, 1), padding='valid')
         _, pooling_dim, _, _ = pooling_output.shape
@@ -149,7 +152,29 @@ def q_networks(source, summary, name):
         trainable_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope.name)
         trainable_vars_by_name = {var.name[len(scope.name):]:var for var in trainable_vars}
 
+        info = []
+        info.append(q_values)
+        info.append(trainable_vars_by_name)
+        info.append(cnn_output1)
+
+
         return q_values, trainable_vars_by_name
+        #return cnn_output1
+
+def actor_network(source, name):
+
+    with tf.variable_scope(name) as scope:
+        #CNN + pooling
+        cnn_output = tf.layers.conv2d(inputs=source,
+                                      filters=1,
+                                      kernel_size=(1, mergeDimension), padding='valid',
+                                      activation=tf.nn.tanh,
+                                      kernel_initializer=SSECIF_initializer,
+                                      bias_initializer=SSECIF_initializer,
+                                      )
+        _, unit_dim1, _, _ = cnn_output.shape
+        print cnn_output.shape
+        return cnn_output
 
 
 X_source = tf.placeholder(dtype=tf.float32, shape=aligned_source.shape, name="aligned_source")
@@ -157,8 +182,13 @@ X_summary = tf.placeholder(dtype=tf.float32, shape=aligned_summary.shape, name="
 X_mask = tf.placeholder(dtype=tf.float32, shape=sentence_amount_mask.shape, name="sentence_amount_mask")
 online_q_values, online_vars = q_networks(X_source, X_summary, "online_model")
 target_q_values, target_vars = q_networks(X_source, X_summary, "target_model")
+output_actions = actor_network(X_source, "actor_model")
 copy_ops = [target_var.assign(online_vars[var_name]) for var_name, target_var in target_vars.items()]
+copy_opsA = [copy_ops[0], copy_ops[1]]
 copy_online_to_target = tf.group(*copy_ops)
+copy_online_to_actor = tf.group(*copy_opsA)
+#__,__,cnn_output = q_networks(X_source, X_summary, "online_model")
+#print cnn_output
 
 
 with tf.variable_scope("train"):
@@ -177,6 +207,7 @@ with tf.variable_scope("train"):
     #optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     optimizer = tf.train.MomentumOptimizer(learning_rate=LR, momentum=momentum, use_nesterov=True)
     training_op = optimizer.minimize(train_loss)
+    trainingA_op = optimizer.minimize(-q_value)
 
 
 init = tf.global_variables_initializer()
@@ -217,7 +248,7 @@ def rolling_records(aligned_source, aligned_summary, mask, roll_iteration, train
     return records
 
 def train_model(aligned_source, aligned_summary, doc_vectors, save_n_epoch, copy_n_epoch, group):
-    saver.restore(sess, tf.train.latest_checkpoint('../resources/%s/model/max_reward'% group))
+    #saver.restore(sess, tf.train.latest_checkpoint('../resources/%s/model/max_reward'% group))
 
 
     #util.del_file('../resources/%s/sum_logs' % group)
@@ -293,7 +324,14 @@ def train_model(aligned_source, aligned_summary, doc_vectors, save_n_epoch, copy
             action_mask = util.getActionMask(maxSen, file_amount, actions, train_set_fids)
 
             feed_dict = {X_source: aligned_source, X_summary: start_summary, X_action: action_mask, y_target: y_val}
+            feed_dictA = {X_source: aligned_source}
             _, instance_loss = sess.run([training_op, train_loss], feed_dict=feed_dict)
+            sess.run([trainingA_op, -q_value],feed_dict=feed_dict)
+
+            l1_out = sess.run(tf.get_default_graph().get_tensor_by_name('online_model/conv2d/kernel:0'), feed_dict= feed_dictA)
+            #output_actions = actor_network(X_source, "actor_model")
+            action_list=output_actions.eval(feed_dict= feed_dictA)
+            print action_list.type
             all_loss.append(instance_loss)
 
         avg_loss = np.average(all_loss)
@@ -327,6 +365,8 @@ def train_model(aligned_source, aligned_summary, doc_vectors, save_n_epoch, copy
 
         if n_epoch > copy_n_epoch and n_epoch % copy_n_epoch == 0:
             copy_online_to_target.run()
+            copy_online_to_actor.run()
+            print "target network and actor network copied"
 
 
         if n_epoch > LR_n_epoch and len(loss_step_track) == LR_decrease_length:

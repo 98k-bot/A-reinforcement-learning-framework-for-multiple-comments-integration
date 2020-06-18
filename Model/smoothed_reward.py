@@ -35,5 +35,5 @@ plt.ylabel("Smoothed Reward on Each Fold")
 
 ax.legend(loc='upper right')
 plt.tight_layout()
-plt.savefig('1_cr.pdf', bbox_inches='tight')
+plt.savefig('1_cr.png', bbox_inches='tight')
 plt.show()
