@@ -18,7 +18,7 @@ python agent.py
 ### Test the agent:
 ```ruby
 cd ~/Model
-python agent.py
+python Eval.py
 ```
 ## License
 
