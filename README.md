@@ -9,6 +9,13 @@ conda create --name rlenv --file spec-file.txt
 conda install --name rlenv --file spec-file.txt
 ```
 ## Usage
+
+### Train the agent:
+```ruby
+cd ~/Model
+python agent.py
+```
+### Test the agent:
 ```ruby
 cd ~/Model
 python agent.py
