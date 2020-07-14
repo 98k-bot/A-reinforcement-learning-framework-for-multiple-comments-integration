@@ -2,6 +2,6 @@
 ## Installation
 ```ruby
 cd ~/venv
-conda create --name myenv --file spec-file.txt
-conda install --name myenv --file spec-file.txt
+conda create --name rlenv --file spec-file.txt
+conda install --name rlenv --file spec-file.txt
 ```
