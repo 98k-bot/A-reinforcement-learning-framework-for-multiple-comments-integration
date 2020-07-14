@@ -1,7 +1,8 @@
 # A-reinforcement-learning-framework-for-multiple-comments-integration
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1119064.svg)](https://doi.org/10.5281/zenodo.1119064)
-[![Build Status](http://bioconductor.org/shields/build/devel/bioc/netSmooth.svg)](https://travis-ci.org/BIMSBbioinfo/netSmooth) [![codecov](https://codecov.io/gh/BIMSBbioinfo/netSmooth/branch/master/graph/badge.svg)](https://codecov.io/gh/BIMSBbioinfo/netSmooth) [![BioC_years](http://www.bioconductor.org/shields/years-in-bioc/netSmooth.svg)](http://www.bioconductor.org/packages/release/bioc/html/netSmooth.html)
+[![Build Status](http://bioconductor.org/shields/build/devel/bioc/netSmooth.svg)](https://travis-ci.org/BIMSBbioinfo/netSmooth) [![codecov](https://codecov.io/gh/BIMSBbioinfo/netSmooth/branch/master/graph/badge.svg)](https://codecov.io/gh/BIMSBbioinfo/netSmooth) 
+[![GPL v3 licensed](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/98k-bot/GAN-Assisted-Preference-Based-Learning/blob/master/LICENSE) 
 
 ## Installation
 ```ruby
